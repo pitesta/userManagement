@@ -1,0 +1,120 @@
+:host {
+  display: block;
+  max-width: 680px;
+}
+
+.intestazione {
+  margin-bottom: 1.5rem;
+}
+
+.occhiello {
+  margin: 0 0 0.4rem;
+  color: #4f46e5;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0 0 0.4rem;
+  color: #0f172a;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  letter-spacing: -0.02em;
+}
+
+.descrizione {
+  margin: 0;
+  color: #64748b;
+}
+
+.pannello {
+  padding: clamp(1.2rem, 3vw, 1.8rem);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 14px 34px -28px rgba(15, 23, 42, 0.45);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 0.35rem;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.92rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16);
+}
+
+.campo-errore {
+  margin-top: 0.3rem;
+  color: #dc2626;
+  font-size: 0.76rem;
+}
+
+.messaggio {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+}
+
+.messaggio.errore {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.messaggio.successo {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.primario {
+  margin-top: 0.4rem;
+  padding: 0.8rem;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #4f46e5, #0891b2);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primario:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.primario:disabled {
+  opacity: 0.65;
+  cursor: default;
+}

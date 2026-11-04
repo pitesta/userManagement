@@ -1,0 +1,254 @@
+<header class="intestazione">
+  <div>
+    <p class="occhiello">{{ i18n.t('utenti.occhiello') }}</p>
+    <h1>{{ i18n.t('utenti.titolo') }}</h1>
+    <p class="descrizione">{{ i18n.t('utenti.descrizione') }}</p>
+  </div>
+  <button type="button" class="ricarica" (click)="carica()" [disabled]="caricamento()">
+    {{
+      caricamento()
+        ? i18n.t('comune.caricamento')
+        : i18n.t('utenti.aggiorna')
+    }}
+  </button>
+</header>
+
+@if (errore()) {
+  <p class="messaggio errore">{{ errore() }}</p>
+}
+
+@if (erroreAggiornamento()) {
+  <p class="messaggio errore">{{ erroreAggiornamento() }}</p>
+}
+
+@if (caricamento()) {
+  <p class="stato">{{ i18n.t('utenti.caricamentoElenco') }}</p>
+} @else if (utenti().length === 0) {
+  <p class="stato">{{ i18n.t('utenti.vuoto') }}</p>
+} @else {
+  <div class="tabella-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">{{ i18n.t('utenti.colId') }}</th>
+          <th scope="col">{{ i18n.t('utenti.colNome') }}</th>
+          <th scope="col">{{ i18n.t('utenti.colEmail') }}</th>
+          <th scope="col">{{ i18n.t('utenti.colRuolo') }}</th>
+          @if (sonoAmministratore()) {
+            <th scope="col">{{ i18n.t('utenti.colAmministratore') }}</th>
+            <th scope="col">{{ i18n.t('utenti.colAzioni') }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (utente of utenti(); track utente.idUtente) {
+          <tr>
+            <td class="id">{{ utente.idUtente }}</td>
+            <td>
+              <span class="avatar">{{ utente.nomeUtente.charAt(0).toUpperCase() }}</span>
+              {{ utente.nomeUtente }}
+            </td>
+            <td>{{ utente.email }}</td>
+            <td>
+              @if (utente.amministratore) {
+                <span class="badge admin">{{ i18n.t('ruolo.amministratore') }}</span>
+              } @else {
+                <span class="badge">{{ i18n.t('ruolo.utente') }}</span>
+              }
+            </td>
+            @if (sonoAmministratore()) {
+              <td>
+                <button
+                  type="button"
+                  class="switch"
+                  [class.attivo]="utente.amministratore"
+                  [disabled]="aggiornamento() === utente.idUtente"
+                  [attr.aria-pressed]="utente.amministratore"
+                  [attr.aria-label]="
+                    i18n.t('utenti.impostaAdmin', { nome: utente.nomeUtente })
+                  "
+                  (click)="cambiaAmministratore(utente)"
+                >
+                  <span class="interruttore" aria-hidden="true"></span>
+                  <span>{{
+                    aggiornamento() === utente.idUtente
+                      ? i18n.t('utenti.salvataggio')
+                      : utente.amministratore
+                        ? i18n.t('utenti.si')
+                        : i18n.t('utenti.no')
+                  }}</span>
+                </button>
+              </td>
+              <td>
+                <div class="azioni">
+                  <button
+                    type="button"
+                    class="azione modifica"
+                    (click)="apriModifica(utente)"
+                  >
+                    {{ i18n.t('utenti.modifica') }}
+                  </button>
+                  <button
+                    type="button"
+                    class="azione elimina"
+                    (click)="chiediEliminazione(utente)"
+                  >
+                    {{ i18n.t('utenti.elimina') }}
+                  </button>
+                </div>
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="conteggio">{{ i18n.t('utenti.totale', { n: utenti().length }) }}</p>
+}
+
+@if (utenteInModifica(); as utente) {
+  <div class="modale-sfondo" (click)="chiudiModifica()">
+    <div
+      class="modale"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="i18n.t('utenti.modificaTitolo')"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="modale-intestazione">
+        <div>
+          <h2>{{ i18n.t('utenti.modificaTitolo') }}</h2>
+          <p>{{ i18n.t('utenti.modificaSottotitolo', { nome: utente.nomeUtente }) }}</p>
+        </div>
+        <button
+          type="button"
+          class="chiudi"
+          [attr.aria-label]="i18n.t('comune.chiudi')"
+          (click)="chiudiModifica()"
+        >
+          ×
+        </button>
+      </header>
+
+      @if (erroreModifica()) {
+        <p class="messaggio errore">{{ erroreModifica() }}</p>
+      }
+
+      <form [formGroup]="modificaForm" (ngSubmit)="salvaModifica()" novalidate>
+        <div class="campo">
+          <label for="modifica-nome">{{ i18n.t('campo.nomeUtente') }}</label>
+          <input
+            id="modifica-nome"
+            type="text"
+            formControlName="nomeUtente"
+            maxlength="100"
+            autocomplete="off"
+          />
+          @if (modificaNonValida('nomeUtente', 'required')) {
+            <small class="campo-errore">{{ i18n.t('campo.nomeObbligatorio') }}</small>
+          }
+          @if (modificaNonValida('nomeUtente', 'maxlength')) {
+            <small class="campo-errore">{{ i18n.t('campo.max100') }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="modifica-email">{{ i18n.t('campo.email') }}</label>
+          <input
+            id="modifica-email"
+            type="email"
+            formControlName="email"
+            maxlength="40"
+            autocomplete="off"
+          />
+          @if (modificaNonValida('email', 'required')) {
+            <small class="campo-errore">{{ i18n.t('campo.emailObbligatoria') }}</small>
+          }
+          @if (modificaNonValida('email', 'email')) {
+            <small class="campo-errore">{{ i18n.t('campo.emailNonValida') }}</small>
+          }
+          @if (modificaNonValida('email', 'maxlength')) {
+            <small class="campo-errore">{{ i18n.t('campo.max40') }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="modifica-password">{{ i18n.t('campo.password') }}</label>
+          <input
+            id="modifica-password"
+            type="password"
+            formControlName="password"
+            autocomplete="new-password"
+            [placeholder]="i18n.t('login.placeholderPasswordNuova')"
+          />
+          @if (modificaNonValida('password', 'minlength')) {
+            <small class="campo-errore">{{ i18n.t('campo.min6') }}</small>
+          }
+          <small class="aiuto">{{ i18n.t('utenti.passwordAiuto') }}</small>
+        </div>
+
+        <div class="modale-azioni">
+          <button
+            type="button"
+            class="secondario"
+            [disabled]="salvataggioModifica()"
+            (click)="chiudiModifica()"
+          >
+            {{ i18n.t('comune.annulla') }}
+          </button>
+          <button type="submit" class="primario" [disabled]="salvataggioModifica()">
+            {{
+              salvataggioModifica()
+                ? i18n.t('comune.salvataggio')
+                : i18n.t('comune.salva')
+            }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (utenteDaEliminare(); as utente) {
+  <div class="modale-sfondo" (click)="annullaEliminazione()">
+    <div
+      class="modale modale-conferma"
+      role="alertdialog"
+      aria-modal="true"
+      [attr.aria-label]="i18n.t('utenti.eliminaTitolo')"
+      (click)="$event.stopPropagation()"
+    >
+      <h2>{{ i18n.t('utenti.eliminaTitolo') }}</h2>
+      <p class="domanda">
+        {{ i18n.t('utenti.eliminaConferma', { nome: utente.nomeUtente }) }}
+      </p>
+
+      @if (erroreEliminazione()) {
+        <p class="messaggio errore">{{ erroreEliminazione() }}</p>
+      }
+
+      <div class="modale-azioni">
+        <button
+          type="button"
+          class="secondario"
+          [disabled]="eliminazioneInCorso()"
+          (click)="annullaEliminazione()"
+        >
+          {{ i18n.t('comune.annulla') }}
+        </button>
+        <button
+          type="button"
+          class="pericolo"
+          [disabled]="eliminazioneInCorso()"
+          (click)="confermaEliminazione()"
+        >
+          {{
+            eliminazioneInCorso()
+              ? i18n.t('utenti.eliminazioneInCorso')
+              : i18n.t('comune.elimina')
+          }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

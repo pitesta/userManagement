@@ -1,0 +1,38 @@
+<div class="layout">
+  <aside class="sidebar">
+    <nav class="menu" [attr.aria-label]="i18n.t('menu.principale')">
+      @for (voce of menu; track voce.path) {
+        <a
+          [routerLink]="voce.path"
+          routerLinkActive="attivo"
+          class="menu-link"
+        >
+          <span class="icona" aria-hidden="true">{{ voce.icona }}</span>
+          <span>{{ i18n.t(voce.chiave) }}</span>
+        </a>
+      }
+    </nav>
+
+    <div class="sidebar-footer">
+      @if (utente(); as u) {
+        <div class="utente">
+          <span class="avatar">{{ u.nomeUtente.charAt(0).toUpperCase() }}</span>
+          <div class="utente-info">
+            <strong>{{ u.nomeUtente }}</strong>
+            <small>{{ u.email }}</small>
+            @if (u.amministratore) {
+              <span class="ruolo">{{ i18n.t('ruolo.amministratore') }}</span>
+            }
+          </div>
+        </div>
+      }
+      <button type="button" class="logout" (click)="logout()">
+        {{ i18n.t('shell.esci') }}
+      </button>
+    </div>
+  </aside>
+
+  <main class="contenuto">
+    <router-outlet />
+  </main>
+</div>

@@ -1,0 +1,80 @@
+<header class="intestazione">
+  <p class="occhiello">{{ i18n.t('nuovo.occhiello') }}</p>
+  <h1>{{ i18n.t('nuovo.titolo') }}</h1>
+  <p class="descrizione">{{ i18n.t('nuovo.descrizione') }}</p>
+</header>
+
+<div class="pannello">
+  @if (successo()) {
+    <p class="messaggio successo">{{ successo() }}</p>
+  }
+  @if (errore()) {
+    <p class="messaggio errore">{{ errore() }}</p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="salva()" novalidate>
+    <div class="campo">
+      <label for="nuovo-nome">{{ i18n.t('campo.nomeUtente') }}</label>
+      <input
+        id="nuovo-nome"
+        type="text"
+        formControlName="nomeUtente"
+        maxlength="100"
+        autocomplete="off"
+        [placeholder]="i18n.t('login.placeholderNome')"
+      />
+      @if (nonValido('nomeUtente', 'required')) {
+        <small class="campo-errore">{{ i18n.t('campo.nomeObbligatorio') }}</small>
+      }
+      @if (nonValido('nomeUtente', 'maxlength')) {
+        <small class="campo-errore">{{ i18n.t('campo.max100') }}</small>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="nuovo-email">{{ i18n.t('campo.email') }}</label>
+      <input
+        id="nuovo-email"
+        type="email"
+        formControlName="email"
+        maxlength="40"
+        autocomplete="off"
+        [placeholder]="i18n.t('login.placeholderEmail')"
+      />
+      @if (nonValido('email', 'required')) {
+        <small class="campo-errore">{{ i18n.t('campo.emailObbligatoria') }}</small>
+      }
+      @if (nonValido('email', 'email')) {
+        <small class="campo-errore">{{ i18n.t('campo.emailNonValida') }}</small>
+      }
+      @if (nonValido('email', 'maxlength')) {
+        <small class="campo-errore">{{ i18n.t('campo.max40') }}</small>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="nuovo-password">{{ i18n.t('campo.password') }}</label>
+      <input
+        id="nuovo-password"
+        type="password"
+        formControlName="password"
+        autocomplete="new-password"
+        [placeholder]="i18n.t('login.placeholderPasswordNuova')"
+      />
+      @if (nonValido('password', 'required')) {
+        <small class="campo-errore">{{ i18n.t('campo.passwordObbligatoria') }}</small>
+      }
+      @if (nonValido('password', 'minlength')) {
+        <small class="campo-errore">{{ i18n.t('campo.min6') }}</small>
+      }
+    </div>
+
+    <button type="submit" class="primario" [disabled]="caricamento()">
+      {{
+        caricamento()
+          ? i18n.t('comune.salvataggio')
+          : i18n.t('nuovo.crea')
+      }}
+    </button>
+  </form>
+</div>

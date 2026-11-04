@@ -1,0 +1,16 @@
+<header class="topbar">
+  <div class="marchio">
+    <span class="marchio-icona" aria-hidden="true">PW</span>
+    <span class="titolo">Gestione Utenti</span>
+    <span class="sottotitolo">Angular + Java</span>
+  </div>
+
+  <label class="lingua">
+    <span class="lingua-etichetta">{{ i18n.t('comune.lingua') }}</span>
+    <select [value]="i18n.lingua()" (change)="cambiaLingua($event)">
+      @for (opzione of lingue; track opzione.codice) {
+        <option [value]="opzione.codice">{{ opzione.nome }}</option>
+      }
+    </select>
+  </label>
+</header>

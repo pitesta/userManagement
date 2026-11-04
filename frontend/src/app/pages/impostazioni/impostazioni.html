@@ -1,0 +1,63 @@
+<header class="intestazione">
+  <p class="occhiello">{{ i18n.t('impostazioni.occhiello') }}</p>
+  <h1>{{ i18n.t('impostazioni.titolo') }}</h1>
+  <p class="descrizione">{{ i18n.t('impostazioni.descrizione') }}</p>
+</header>
+
+<section class="griglia">
+  <article class="card">
+    <h2>{{ i18n.t('impostazioni.stack') }}</h2>
+    <dl>
+      <div>
+        <dt>{{ i18n.t('impostazioni.frontend') }}</dt>
+        <dd>Angular 22</dd>
+      </div>
+      <div>
+        <dt>{{ i18n.t('impostazioni.backend') }}</dt>
+        <dd>Java 25 · Jakarta Servlet 6.1</dd>
+      </div>
+      <div>
+        <dt>{{ i18n.t('impostazioni.server') }}</dt>
+        <dd>Apache Tomcat 11</dd>
+      </div>
+      <div>
+        <dt>{{ i18n.t('impostazioni.database') }}</dt>
+        <dd>SQLite 3</dd>
+      </div>
+    </dl>
+  </article>
+
+  <article class="card">
+    <h2>{{ i18n.t('impostazioni.sessione') }}</h2>
+    <dl>
+      <div>
+        <dt>{{ i18n.t('impostazioni.utente') }}</dt>
+        <dd>{{ utente()?.nomeUtente }}</dd>
+      </div>
+      <div>
+        <dt>{{ i18n.t('campo.email') }}</dt>
+        <dd>{{ utente()?.email }}</dd>
+      </div>
+      <div>
+        <dt>{{ i18n.t('campo.ruolo') }}</dt>
+        <dd>
+          {{
+            utente()?.amministratore
+              ? i18n.t('ruolo.amministratore')
+              : i18n.t('ruolo.utente')
+          }}
+        </dd>
+      </div>
+      <div>
+        <dt>{{ i18n.t('impostazioni.autenticazione') }}</dt>
+        <dd>{{ i18n.t('impostazioni.autenticazioneValore') }}</dd>
+      </div>
+      <div>
+        <dt>{{ i18n.t('campo.password') }}</dt>
+        <dd>{{ i18n.t('impostazioni.passwordValore') }}</dd>
+      </div>
+    </dl>
+  </article>
+</section>
+
+<p class="nota">{{ i18n.t('impostazioni.nota') }}</p>

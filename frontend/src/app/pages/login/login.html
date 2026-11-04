@@ -1,0 +1,147 @@
+<section class="accesso">
+  <div class="presentazione">
+    <span class="badge">{{ i18n.t('login.demo') }}</span>
+    <h1>
+      {{ i18n.t('login.titolo1') }}<br />
+      <span>{{ i18n.t('login.titolo2') }}</span>
+    </h1>
+    <p>{{ i18n.t('login.descrizione') }}</p>
+    <ul>
+      <li>{{ i18n.t('login.punto1') }}</li>
+      <li>{{ i18n.t('login.punto2') }}</li>
+      <li>{{ i18n.t('login.punto3') }}</li>
+    </ul>
+  </div>
+
+  <div class="card-accesso">
+    <div class="tabs" role="tablist" [attr.aria-label]="i18n.t('login.accessoORegistrazione')">
+      <button
+        type="button"
+        role="tab"
+        [class.attivo]="modalita() === 'login'"
+        [attr.aria-selected]="modalita() === 'login'"
+        (click)="cambiaModalita('login')"
+      >
+        {{ i18n.t('login.tabLogin') }}
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [class.attivo]="modalita() === 'registrazione'"
+        [attr.aria-selected]="modalita() === 'registrazione'"
+        (click)="cambiaModalita('registrazione')"
+      >
+        {{ i18n.t('login.tabRegistrati') }}
+      </button>
+    </div>
+
+    @if (avviso()) {
+      <p class="messaggio successo">{{ avviso() }}</p>
+    }
+    @if (errore()) {
+      <p class="messaggio errore">{{ errore() }}</p>
+    }
+
+    @if (modalita() === 'login') {
+      <form [formGroup]="loginForm" (ngSubmit)="accedi()" novalidate>
+        <h2>{{ i18n.t('login.bentornato') }}</h2>
+        <p class="sottotitolo">{{ i18n.t('login.sottotitoloLogin') }}</p>
+
+        <label for="login-nome">{{ i18n.t('campo.nomeUtente') }}</label>
+        <input
+          id="login-nome"
+          type="text"
+          formControlName="nomeUtente"
+          autocomplete="username"
+          [placeholder]="i18n.t('login.placeholderNome')"
+        />
+        @if (campoNonValido('login', 'nomeUtente', 'required')) {
+          <small class="campo-errore">{{ i18n.t('campo.nomeObbligatorio') }}</small>
+        }
+
+        <label for="login-password">{{ i18n.t('campo.password') }}</label>
+        <input
+          id="login-password"
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          [placeholder]="i18n.t('login.placeholderPassword')"
+        />
+        @if (campoNonValido('login', 'password', 'required')) {
+          <small class="campo-errore">{{ i18n.t('campo.passwordObbligatoria') }}</small>
+        }
+
+        <button type="submit" class="primario" [disabled]="caricamento()">
+          {{
+            caricamento()
+              ? i18n.t('login.accessoInCorso')
+              : i18n.t('login.accedi')
+          }}
+        </button>
+      </form>
+    } @else {
+      <form [formGroup]="registrazioneForm" (ngSubmit)="registrati()" novalidate>
+        <h2>{{ i18n.t('login.creaAccount') }}</h2>
+        <p class="sottotitolo">{{ i18n.t('login.sottotitoloRegistrazione') }}</p>
+
+        <label for="reg-nome">{{ i18n.t('campo.nomeUtente') }}</label>
+        <input
+          id="reg-nome"
+          type="text"
+          formControlName="nomeUtente"
+          autocomplete="username"
+          maxlength="100"
+          [placeholder]="i18n.t('login.placeholderScegliNome')"
+        />
+        @if (campoNonValido('registrazione', 'nomeUtente', 'required')) {
+          <small class="campo-errore">{{ i18n.t('campo.nomeObbligatorio') }}</small>
+        }
+        @if (campoNonValido('registrazione', 'nomeUtente', 'maxlength')) {
+          <small class="campo-errore">{{ i18n.t('campo.max100') }}</small>
+        }
+
+        <label for="reg-email">{{ i18n.t('campo.email') }}</label>
+        <input
+          id="reg-email"
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          maxlength="40"
+          [placeholder]="i18n.t('login.placeholderEmail')"
+        />
+        @if (campoNonValido('registrazione', 'email', 'required')) {
+          <small class="campo-errore">{{ i18n.t('campo.emailObbligatoria') }}</small>
+        }
+        @if (campoNonValido('registrazione', 'email', 'email')) {
+          <small class="campo-errore">{{ i18n.t('campo.emailNonValida') }}</small>
+        }
+        @if (campoNonValido('registrazione', 'email', 'maxlength')) {
+          <small class="campo-errore">{{ i18n.t('campo.max40') }}</small>
+        }
+
+        <label for="reg-password">{{ i18n.t('campo.password') }}</label>
+        <input
+          id="reg-password"
+          type="password"
+          formControlName="password"
+          autocomplete="new-password"
+          [placeholder]="i18n.t('login.placeholderPasswordNuova')"
+        />
+        @if (campoNonValido('registrazione', 'password', 'required')) {
+          <small class="campo-errore">{{ i18n.t('campo.passwordObbligatoria') }}</small>
+        }
+        @if (campoNonValido('registrazione', 'password', 'minlength')) {
+          <small class="campo-errore">{{ i18n.t('campo.min6') }}</small>
+        }
+
+        <button type="submit" class="primario" [disabled]="caricamento()">
+          {{
+            caricamento()
+              ? i18n.t('login.registrazioneInCorso')
+              : i18n.t('login.registrati')
+          }}
+        </button>
+      </form>
+    }
+  </div>
+</section>

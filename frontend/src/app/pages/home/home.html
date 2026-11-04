@@ -1,0 +1,67 @@
+<header class="intestazione">
+  <p class="occhiello">{{ i18n.t('home.dashboard') }}</p>
+  <h1>
+    {{
+      i18n.t('home.ciao', {
+        nome: utente()?.nomeUtente ?? i18n.t('home.utenteGenerico'),
+      })
+    }}
+  </h1>
+  <p class="descrizione">{{ i18n.t('home.descrizione') }}</p>
+</header>
+
+<section class="griglia">
+  <article class="card">
+    <span class="card-icona">☰</span>
+    <h2>{{ i18n.t('home.cardUtentiTitolo') }}</h2>
+    <p>{{ i18n.t('home.cardUtentiTesto') }}</p>
+    <a routerLink="/utenti" class="link">{{ i18n.t('home.cardUtentiLink') }}</a>
+  </article>
+
+  <article class="card">
+    <span class="card-icona">＋</span>
+    <h2>{{ i18n.t('home.cardNuovoTitolo') }}</h2>
+    <p>{{ i18n.t('home.cardNuovoTesto') }}</p>
+    <a routerLink="/nuovo-utente" class="link">{{ i18n.t('home.cardNuovoLink') }}</a>
+  </article>
+
+  <article class="card">
+    <span class="card-icona">⚙</span>
+    <h2>{{ i18n.t('home.cardImpostazioniTitolo') }}</h2>
+    <p>{{ i18n.t('home.cardImpostazioniTesto') }}</p>
+    <a routerLink="/impostazioni" class="link">
+      {{ i18n.t('home.cardImpostazioniLink') }}
+    </a>
+  </article>
+</section>
+
+<section class="riepilogo">
+  <div>
+    <h2>{{ i18n.t('home.profiloTitolo') }}</h2>
+    <p>{{ i18n.t('home.profiloTesto') }}</p>
+  </div>
+  <dl>
+    <div>
+      <dt>{{ i18n.t('campo.idUtente') }}</dt>
+      <dd>{{ utente()?.idUtente }}</dd>
+    </div>
+    <div>
+      <dt>{{ i18n.t('campo.nomeUtente') }}</dt>
+      <dd>{{ utente()?.nomeUtente }}</dd>
+    </div>
+    <div>
+      <dt>{{ i18n.t('campo.email') }}</dt>
+      <dd>{{ utente()?.email }}</dd>
+    </div>
+    <div>
+      <dt>{{ i18n.t('campo.ruolo') }}</dt>
+      <dd>
+        {{
+          utente()?.amministratore
+            ? i18n.t('ruolo.amministratore')
+            : i18n.t('ruolo.utente')
+        }}
+      </dd>
+    </div>
+  </dl>
+</section>
