@@ -1,6 +1,6 @@
 # Frontend Angular
 
-*Verificato sul codice: 05/11/2026.*
+Frontend invariato dalla migrazione del backend: Angular 22 continua a usare gli stessi endpoint REST, sessione cookie e contratto JSON. In produzione gli asset sono inclusi nel fat JAR Spring Boot; in sviluppo il proxy Angular inoltra le API al context path backend.
 
 ## Fonti di verifica
 
@@ -104,7 +104,9 @@ Da `app.routes.ts`:
 
 - Errori HTTP: `messaggioErrore()` (`auth.service.ts:115-126`) estrae `error.error`
   (`{"error": "…"}` tipizzato come `ApiError`) o un messaggio di fallback (`status 0`
-  → "Server non raggiungibile. Verifica che Tomcat sia avviato.").
+  → "Server non raggiungibile. Verifica che Tomcat sia avviato."). È una stringa
+  frontend storica mantenuta per compatibilità; il runtime backend attuale è Spring Boot
+  con Tomcat embedded.
 - `I18nService` (`core/i18n.service.ts`):
   - signal `linguaCorrente` inizializzato da `localStorage["prgweb.lingua"]`
     tramite `leggiLingua()` (`i18n.service.ts:515,563-574`; fall back su `'it'` se assente/non valido o

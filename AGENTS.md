@@ -1,105 +1,95 @@
 # AGENTS.md
 
-Web app demo: Angular 22 SPA + Java 25 (Jakarta Servlet 6.1) WAR deployed on
-Tomcat 11, with SQLite. UI and messages are in Italian.
+Demo web app: Angular 22 SPA + Java 25 Spring Boot 4.1.2 backend, packaged as
+an executable fat JAR with embedded Tomcat 11 and H2 Embedded on disk. UI and
+messages are in Italian.
 
 ## Toolchain (user-space, no sudo)
 
 Everything is installed under `~/.local/opt` by `./scripts/install-env.sh`.
-Always load the environment before running raw tools:
+Load the environment before running raw tools:
 
 ```bash
 source scripts/env.sh
 ```
 
-This sets `JAVA_HOME` (JDK 25), `PATH` (Node 26, Maven, SQLite, Angular CLI,
-Tomcat) and `APP_DB_PATH`. Tomcat is a shared instance: deploy other apps as
-separate WARs in `$CATALINA_HOME/webapps`. The SQLite file `data/app.db` is
-per-project; change `APP_DB_PATH` to share or relocate it.
+This sets Java 25, Node 26, Maven, Angular CLI, `PROJECT_ROOT`, and defaults
+for `PRGWEB_DB_PATH`, `SERVER_PORT`, and `SERVER_SERVLET_CONTEXT_PATH`.
+No external Tomcat or database server is used.
 
 ## Commands
 
 ```bash
 ./scripts/install-env.sh      # one-time toolchain install
-./scripts/start.sh            # db-init + build + deploy + start Tomcat
-./scripts/build.sh            # ng build (base-href /prgweb/) + mvn package
-./scripts/deploy.sh           # build + copy WAR to Tomcat
-./scripts/deploy.sh --no-build
-./scripts/dev-frontend.sh     # ng serve :4200 with proxy to :8080/prgweb
-./scripts/tomcat-stop.sh
-./scripts/set-admin.sh <nomeUtente> [1|0]  # manual admin promote/demote
+./scripts/build.sh            # Angular build + executable backend/target/prgweb.jar
+./scripts/start.sh            # start the built JAR (does not build)
+./scripts/stop.sh             # SIGTERM and graceful H2 shutdown
+./scripts/db-backup.sh        # stops the app, creates offline H2 backup, leaves it stopped
+./scripts/db-restore.sh <zip> # restores with the app stopped; optional --start
+./scripts/db-console.sh       # H2 Shell, refuses while app is active
+./scripts/set-admin.sh <user> [1|0] # stops app, updates role, leaves it stopped
+./scripts/dev-frontend.sh     # ng serve :4200 with API proxy to :8080/prgweb
 ```
 
-- App URL: http://localhost:8080/prgweb/
+- App URL: `http://localhost:${SERVER_PORT:-8080}${SERVER_SERVLET_CONTEXT_PATH:-/prgweb}/`
+- H2 directory: `PRGWEB_DB_PATH` (default `<repo>/data`, file `app.mv.db`)
 - Backend tests: `cd backend && mvn test`
-- Single backend test: `cd backend && mvn -Dtest=UtenteDaoTest test`
+- Single backend test: `cd backend && mvn -Dtest=UtenteRepositoryTest test`
 - Frontend tests: `cd frontend && npx ng test --watch=false` (Vitest, no browser)
-- After changing backend code, redeploy with `./scripts/deploy.sh`; Tomcat
-  auto-reloads the WAR, no need to stop it.
+- To include Angular in the JAR, use `./scripts/build.sh`; it builds Angular first
+  and verifies `BOOT-INF/classes/static/index.html` in the final JAR.
 
 ## Architecture facts that matter
 
-- `database/schema.sql` is the only canonical schema. Maven copies it into the
-  WAR classpath; `Database.init()` runs it at startup (idempotent).
-- `UtenteDao` uses plain JDBC prepared statements, not an ORM.
-- Auth is server-side `HttpSession` + `JSESSIONID`; no JWT. Session user is
-  stored without the password hash.
-- `UTENTI.amministratore` (INTEGER 0/1) marks administrators. The first
-  registered user becomes admin (`AuthServlet.register`); later users default
-  to 0. The session stores the flag, so an admin changing their own role has
-  the session attribute refreshed by `AdminUtenteServlet`.
+- `backend/src/main/resources/db/migration/V1__create_utenti.sql` is the
+  initial schema. Flyway applies migrations at startup; Hibernate uses
+  `ddl-auto=validate` and globally quoted identifiers to match the lowercase,
+  quoted names in V1.
+- Persistence is Spring Data JPA + Hibernate. `UtenteRepository` handles
+  account access; `AppLockRepository` locks the permanent `app_lock` row for
+  registration and last-administrator invariants.
+- Domain operations live in `service/`; HTTP endpoints live in REST
+  controllers under `web/`. Auth uses server-side `HttpSession` and
+  `JSESSIONID`, not JWT. Session data excludes the password hash.
+- The first registered user is an administrator. The last remaining admin
+  cannot be demoted or deleted; the API returns `409` with
+  `Deve rimanere almeno un amministratore.`
 - Endpoints: `/api/register`, `/api/login`, `/api/logout`, `/api/me`,
-  `/api/utenti` (requires a session) and `/api/admin/utente` (requires an
-  admin session, updates the flag), `/api/admin/utente/modifica` (name, email,
-  optional password), `/api/admin/utente/elimina` (delete; self-delete returns
-  `logout: true`). See `AuthServlet`, `UtentiServlet` and
-  `AdminUtenteServlet`.
-- The last remaining admin cannot be demoted or deleted: the API returns `409`
-  with `Deve rimanere almeno un amministratore.` Use `scripts/set-admin.sh`
-  only for manual recovery.
-- `SpaFallbackFilter` forwards extensionless GETs (except `/api/*`) to
-  `index.html` for Angular HTML5 routing.
-- The global top bar lives in `frontend/src/app/layout/topbar.*` and is mounted
-  in `app.ts` above the router outlet. Its title is fixed to `Gestione Utenti`
-  and must not be translated.
-- Translations use the custom signal-based `I18nService`
-  (`frontend/src/app/core/i18n.service.ts`) with `it`/`en`/`fr` dictionaries.
-  The selected language is persisted in `localStorage` (`prgweb.lingua`);
-  Italian is the fallback. Backend error strings stay in Italian and are mapped
-  to translation keys by `I18nService.traduciErrore`.
-- Angular calls APIs with relative URLs (`api/...`). This relies on
-  `<base href>`, which `scripts/build.sh` sets to `/$APP_CONTEXT/`; changing
-  `APP_CONTEXT` in `scripts/env.sh` requires a rebuild.
-- Dev proxy (`frontend/proxy.conf.json`) rewrites `/api` to `/prgweb/api`.
-  The session cookie **must stay `Path=/`** in `WEB-INF/web.xml`, otherwise
-  the cookie is not sent by the browser to `localhost:4200`.
+  `/api/utenti`, `/api/admin/utente`, `/api/admin/utente/modifica`,
+  `/api/admin/utente/elimina`.
+- `WebConfig` registers the SPA fallback for extensionless GETs outside `/api/**` to
+  `index.html`. CORS permits the Angular dev origin `http://localhost:4200`.
+- The Angular build uses base href `/$APP_CONTEXT/` (default `/prgweb/`). Keep
+  it aligned with `SERVER_SERVLET_CONTEXT_PATH` when changing the context.
+- The top bar title is fixed to `Gestione Utenti`. Translations use the custom
+  signal-based `I18nService` with `it`/`en`/`fr` dictionaries.
 
 ## Gotchas (do not regress)
 
-- `password` is `varchar(100)` and stores a BCrypt hash. The original
-  `varchar(20)` cannot hold a hash; do not shrink it or store plaintext.
-- `Database.init()` migrates old DBs: if `amministratore` is missing it adds
-  the column and promotes the oldest user (`MIN(idUtente)`), otherwise the
-  app would be left with no administrator. Do not remove this migration.
-- Only administrators may call `/api/admin/utente`; the check uses the flag in
-  the session, so promote a user and log in again (or let the same admin
-  promote themselves through another admin) for the change to apply.
-- SQLite JDBC is explicitly loaded with `Class.forName("org.sqlite.JDBC")` in
-  `Database`. Removing it breaks Tomcat deployment because `DriverManager` may
-  already be initialized by Tomcat's common classloader.
-- Java 25 emits native-access warnings for sqlite-jdbc; `--enable-native-access=ALL-UNNAMED`
-  is set in Tomcat's generated `bin/setenv.sh` and in surefire.
-- DB path precedence: `-Dapp.db.path` > `APP_DB_PATH` > `${catalina.base}/data/app.db`.
-- Do not commit `data/`, `backend/target/`, `frontend/dist/`, `frontend/.angular/`,
-  or `node_modules/`.
+- `password` stores BCrypt hashes, never plaintext. BCrypt accepts at most 72
+  input bytes; retain the existing validation.
+- Keep `hibernate.globally_quoted_identifiers=true`: Flyway V1 creates quoted
+  lowercase table and column names. Without it Hibernate schema validation
+  fails at startup.
+- Keep `PRGWEB_DB_PATH` as a directory and use the H2 URL configured in
+  `application.yml`; do not point it at the old SQLite file.
+- H2 is single-instance (`AUTO_SERVER=FALSE`). Do not run two app processes
+  against the same database directory.
+- H2 Shell and Restore may open the database only after Spring Boot has stopped.
+  `db-backup.sh` performs a controlled stop and leaves the app stopped; restore
+  and `set-admin.sh` also leave it stopped unless restore is called with `--start`.
+- Login rotates the session ID. Cookie settings are `Path=/`, `HttpOnly`,
+  `SameSite=Lax`, with a 30-minute inactivity timeout.
+- Do not commit `data/`, `backend/target/`, `frontend/dist/`,
+  `frontend/.angular/`, or `node_modules/`.
 
 ## Conventions
 
-- Java package root: `it.prgweb`; servlets in `web`, DAOs in `dao`, models in
-  `model`, utilities in `util`.
+- Java package root: `it.prgweb`; controllers and advice in `web`, repositories
+  in `repository`, services in `service`, models in `model`.
 - Angular: standalone components, functional guard, lazy-loaded page
-  components, signals for state. Pages live in `src/app/pages/*`.
+  components, signals for state. Pages live in `frontend/src/app/pages/*`.
 - All visible UI labels go through `I18nService.t('chiave')`; the only fixed
-  Italian text is the top bar title `Gestione Utenti`. Add every new key to all
-  three dictionaries (`it`, `en`, `fr`).
+  Italian text is the top bar title. Add every new key to all three language
+  dictionaries.
 - Keep API error bodies as `{"error":"messaggio in italiano"}`.

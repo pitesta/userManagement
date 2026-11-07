@@ -1,16 +1,35 @@
 package it.prgweb.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-import java.io.Serializable;
+/**
+ * Utente dell'applicazione. La password contiene sempre un hash BCrypt,
+ * mai testo in chiaro. Mappata sulle colonne snake_case di V1 Flyway.
+ */
+@Entity
+@Table(name = "utenti")
+public class Utente {
 
-/** Utente dell'applicazione. La password è sempre un hash BCrypt. */
-public class Utente implements Serializable {
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_utente")
     private long idUtente;
+
+    @Column(name = "nome_utente", nullable = false)
     private String nomeUtente;
+
+    @Column(name = "password", nullable = false)
     private String password;
+
+    @Column(name = "email", nullable = false)
     private String email;
+
+    @Column(name = "amministratore", nullable = false)
     private boolean amministratore;
 
     public long getIdUtente() {
@@ -29,7 +48,6 @@ public class Utente implements Serializable {
         this.nomeUtente = nomeUtente;
     }
 
-    @JsonIgnore
     public String getPassword() {
         return password;
     }
@@ -52,15 +70,5 @@ public class Utente implements Serializable {
 
     public void setAmministratore(boolean amministratore) {
         this.amministratore = amministratore;
-    }
-
-    /** Copia senza hash, adatta alla sessione e alle risposte JSON. */
-    public Utente senzaPassword() {
-        Utente u = new Utente();
-        u.setIdUtente(idUtente);
-        u.setNomeUtente(nomeUtente);
-        u.setEmail(email);
-        u.setAmministratore(amministratore);
-        return u;
     }
 }

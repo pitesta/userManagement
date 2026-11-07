@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dev server Angular con proxy /api -> Tomcat.
+# Dev server Angular con proxy /api -> backend Spring Boot locale.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installa in user-space (nessun sudo) JDK 25, Node 26, Maven, Tomcat 11, SQLite CLI e Angular CLI.
+# Installa in user-space (nessun sudo) JDK 25, Node 26, Maven e Angular CLI.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -45,24 +45,6 @@ else
   echo "[skip] Maven"
 fi
 
-# --- Tomcat 11.0.27 ---
-if [ ! -d "$CATALINA_HOME" ]; then
-  download "https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.27/bin/apache-tomcat-11.0.27.tar.gz" "$TOOLS_DIR/tomcat.tar.gz"
-  tar -xzf "$TOOLS_DIR/tomcat.tar.gz" -C "$TOOLS_DIR"
-  rm -f "$TOOLS_DIR/tomcat.tar.gz"
-else
-  echo "[skip] Tomcat"
-fi
-
-# --- SQLite CLI ---
-if [ ! -x "$SQLITE_HOME/sqlite3" ]; then
-  download "https://www.sqlite.org/2026/sqlite-tools-linux-x64-3540100.zip" "$TOOLS_DIR/sqlite-tools.zip"
-  unzip -q -o "$TOOLS_DIR/sqlite-tools.zip" -d "$TOOLS_DIR"
-  rm -f "$TOOLS_DIR/sqlite-tools.zip"
-else
-  echo "[skip] SQLite CLI"
-fi
-
 # --- Angular CLI (prefix user-space) ---
 mkdir -p "$TOOLS_DIR/npm-global"
 "$NODE_HOME/bin/npm" config set prefix "$TOOLS_DIR/npm-global" >/dev/null
@@ -76,14 +58,6 @@ fi
 # Ricarica env.sh ora che JDK 25 è presente.
 source "$SCRIPT_DIR/env.sh"
 
-# --- Configurazione Tomcat: Java 25 + percorso DB del progetto ---
-cat > "$CATALINA_HOME/bin/setenv.sh" <<EOF
-#!/bin/sh
-export JAVA_HOME="$JAVA_HOME"
-export CATALINA_OPTS="\$CATALINA_OPTS -Dapp.db.path=$PROJECT_ROOT/data/app.db --enable-native-access=ALL-UNNAMED"
-EOF
-chmod +x "$CATALINA_HOME/bin/setenv.sh"
-
 # Ricarica env.sh dopo l'installazione (JAVA_HOME definitivo).
 source "$SCRIPT_DIR/env.sh"
 
@@ -94,6 +68,4 @@ echo "  Node         = $("$NODE_HOME/bin/node" -v)"
 echo "  npm          = $("$NODE_HOME/bin/npm" -v)"
 echo "  Maven        = $("$MAVEN_HOME/bin/mvn" -v | head -1)"
 echo "  Angular CLI  = $("$TOOLS_DIR/npm-global/bin/ng" version 2>/dev/null | grep -i 'Angular CLI' | head -1 | sed 's/^[[:space:]]*//')"
-echo "  Tomcat       = $CATALINA_HOME"
-echo "  SQLite       = $("$SQLITE_HOME/sqlite3" --version)"
-echo "  DB           = $APP_DB_PATH"
+echo "  H2 DB        = $PRGWEB_DB_PATH/app.mv.db"

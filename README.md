@@ -3,9 +3,9 @@
 Applicazione web demo con:
 
 - **Front-end**: Angular 22 (standalone components + Router)
-- **Back-end**: Java 25 LTS, Jakarta Servlet 6.1, Maven
-- **Server**: Apache Tomcat 11
-- **Database**: SQLite 3
+- **Back-end**: Java 25 LTS, Spring Boot 4.1.2, Spring MVC + JPA
+- **Server**: Tomcat 11 embedded in the executable JAR
+- **Database**: H2 embedded su file, schema gestito da Flyway
 - **Sicurezza**: password con hash BCrypt, sessione HTTP
 
 All'avvio l'applicazione mostra la schermata di **login / registrazione**.
@@ -26,8 +26,6 @@ Lo script di setup installa tutto in user-space (`~/.local/opt`), senza `sudo`:
 - JDK 25 (Temurin)
 - Node.js 26 LTS
 - Maven 3.9.x
-- Apache Tomcat 11
-- SQLite CLI
 - Angular CLI 22
 
 ## Avvio rapido
@@ -36,35 +34,43 @@ Lo script di setup installa tutto in user-space (`~/.local/opt`), senza `sudo`:
 # 1. Installa la toolchain (una sola volta)
 ./scripts/install-env.sh
 
-# 2. Avvia tutto: database + build + deploy + Tomcat
+# 2. Crea il fat JAR eseguibile con il frontend incluso
+./scripts/build.sh
+
+# 3. Avvia Spring Boot con Tomcat embedded e H2 su file
 ./scripts/start.sh
 ```
 
 Apri: **http://localhost:8080/prgweb/**
 
-Alla prima apertura registra un nuovo utente dalla scheda **Registrati**,
-poi effettua il login. Il **primo utente registrato diventa automaticamente
-amministratore**; gli utenti successivi nascono senza privilegi di
-amministrazione.
+Per arrestare l'applicazione in modo pulito:
+
+```bash
+./scripts/stop.sh
+```
+
+Al primo avvio accedi con l'account amministratore iniziale `admin` / `admin`
+e modifica la password dalla gestione del tuo profilo. Le registrazioni
+successive creano utenti senza privilegi amministrativi; l'amministratore può
+assegnare o revocare i ruoli dalla pagina **Utenti**.
 
 ## Comandi
 
 | Comando | Descrizione |
 |---|---|
-| `./scripts/install-env.sh` | Installa JDK, Node, Maven, Tomcat, SQLite e Angular CLI |
-| `./scripts/db-init.sh` | Crea/aggiorna le tabelle SQLite da `database/schema.sql` |
-| `./scripts/build.sh` | Compila Angular e crea `backend/target/prgweb.war` |
-| `./scripts/deploy.sh` | Build + copia del WAR in Tomcat |
-| `./scripts/deploy.sh --no-build` | Copia in Tomcat il WAR già compilato |
-| `./scripts/tomcat-start.sh` | Avvia Tomcat |
-| `./scripts/tomcat-stop.sh` | Ferma Tomcat |
-| `./scripts/start.sh` | DB + build + deploy + avvio Tomcat |
+| `./scripts/install-env.sh` | Installa JDK, Node, Maven e Angular CLI |
+| `./scripts/build.sh` | Compila Angular e crea `backend/target/prgweb.jar` eseguibile |
+| `./scripts/start.sh` | Avvia direttamente il fat JAR Spring Boot già compilato |
+| `./scripts/stop.sh` | Arresta Spring Boot con SIGTERM e chiusura pulita di H2 |
+| `./scripts/db-backup.sh` | Arresta l'app e crea un backup H2 offline; lascia l'app ferma |
+| `./scripts/db-restore.sh <zip>` | Ripristina un backup H2 con l'app ferma |
+| `./scripts/db-console.sh` | Apre H2 Shell solo con l'app ferma |
+| `./scripts/set-admin.sh <utente> [1|0]` | Aggiorna il ruolo amministratore a DB chiuso |
 | `./scripts/dev-frontend.sh` | Dev server Angular su `:4200` con proxy API |
-| `./scripts/set-admin.sh <nomeUtente> [1\|0]` | Promuove/revoca un amministratore (recupero manuale) |
 
 ### Sviluppo front-end
 
-Con Tomcat già avviato:
+Con Spring Boot avviato:
 
 ```bash
 ./scripts/dev-frontend.sh
@@ -75,7 +81,9 @@ Apri **http://localhost:4200/**. Le chiamate a `/api/*` vengono inoltrate a
 Dopo una modifica al back-end:
 
 ```bash
-./scripts/deploy.sh
+./scripts/build.sh
+./scripts/stop.sh
+./scripts/start.sh
 ```
 
 ### Test
@@ -83,11 +91,11 @@ Dopo una modifica al back-end:
 ```bash
 source scripts/env.sh
 
-# Back-end (JUnit 5/6, DB SQLite temporaneo)
+# Back-end (JUnit, H2 temporaneo)
 cd backend && mvn test
 
 # Un solo test
-cd backend && mvn -Dtest=UtenteDaoTest test
+cd backend && mvn -Dtest=UtenteRepositoryTest test
 
 # Front-end (Vitest)
 cd frontend && npx ng test --watch=false
@@ -96,32 +104,23 @@ cd frontend && npx ng test --watch=false
 ## Struttura
 
 ```
-backend/                 API Java (WAR)
+backend/                 API Spring Boot (fat JAR)
   src/main/java/it/prgweb/
-    db/Database.java     connessione SQLite + init schema
-    dao/UtenteDao.java   prepared statement sulla tabella UTENTI
-    web/AuthServlet.java login, registrazione, logout, /me
-    web/UtentiServlet.java elenco utenti (protetto da sessione)
-    web/AdminUtenteServlet.java ruolo, modifica ed eliminazione utenti (solo admin)
-database/schema.sql      schema canonico della tabella UTENTI
+    web/                 controller REST e gestione errori
+    service/             regole di dominio transazionali
+    repository/          Spring Data JPA e mutex applicativo
+  src/main/resources/
+    db/migration/        schema Flyway versionato
 frontend/                applicazione Angular
-data/app.db              database SQLite (generato, non versionato)
-scripts/                 setup, build, deploy e avvio
+data/app.mv.db           database H2 (generato, non versionato)
+scripts/                 setup, build, avvio e arresto
 ```
 
 ## Database
 
-SQLite, file `data/app.db`. La tabella richiesta è:
-
-```sql
-CREATE TABLE IF NOT EXISTS UTENTI (
-  idUtente       INTEGER      PRIMARY KEY AUTOINCREMENT,
-  nomeUtente     VARCHAR(100) NOT NULL UNIQUE,
-  password       VARCHAR(100) NOT NULL,
-  email          VARCHAR(40)  NOT NULL,
-  amministratore INTEGER      NOT NULL DEFAULT 0
-);
-```
+H2 Embedded persiste in `data/app.mv.db` per impostazione predefinita.
+Flyway crea lo schema da `backend/src/main/resources/db/migration/`; Hibernate
+lo valida all'avvio. Il primo avvio non richiede un comando di inizializzazione.
 
 Note:
 
@@ -131,11 +130,9 @@ Note:
   La lunghezza è stata portata da `varchar(20)` a `varchar(100)` perché
   un hash BCrypt non entra in 20 caratteri.
 - L'email è obbligatoria e validata, ma non univoca.
-- `amministratore` vale `1` per gli amministratori e `0` per gli utenti
-  normali. Il primo utente registrato è amministratore; gli altri no.
-- Su un database creato prima dell'introduzione del flag, la colonna viene
-  aggiunta automaticamente all'avvio e il primo utente (ID più basso) viene
-  promosso ad amministratore, così l'applicazione resta governabile.
+- `amministratore` è booleano. In una nuova installazione Flyway crea
+  l'account `admin`; le registrazioni successive non sono amministratori.
+- Gli account SQLite precedenti non vengono migrati.
 
 ### Amministratori
 
@@ -149,19 +146,22 @@ Note:
 - Un amministratore può promuovere o revocare altri utenti.
 - Non è possibile revocare o eliminare l'ultimo amministratore rimasto
   (`409 Deve rimanere almeno un amministratore.`).
-- Per recuperare l'accesso quando nessun amministratore è disponibile:
+## Backup e ripristino
+
+H2 Embedded usa `AUTO_SERVER=FALSE`: gli strumenti H2 standalone devono essere
+eseguiti dopo la chiusura completa dell'applicazione. `db-backup.sh` arresta
+Spring Boot, verifica il processo e salva uno ZIP sotto
+`$PRGWEB_DB_PATH/backups/`; dopo il successo l'app resta ferma. Avviala
+nuovamente con `./scripts/start.sh` quando vuoi.
+
+Per ripristinare, con l'app ferma:
 
 ```bash
-./scripts/set-admin.sh mario 1     # promuove mario
-./scripts/set-admin.sh mario 0     # revoca (se resta almeno un admin)
+./scripts/db-restore.sh /percorso/prgweb-<timestamp>.zip
+./scripts/start.sh
 ```
 
-Per ispezionare il database:
-
-```bash
-source scripts/env.sh
-sqlite3 data/app.db "SELECT idUtente, nomeUtente, email, amministratore FROM UTENTI;"
-```
+Dettagli e verifica del flusso in [docs/database.md](docs/database.md).
 
 ## API
 
@@ -218,29 +218,27 @@ curl -c cookie.txt -H 'Content-Type: application/json' \
 Variabili in `scripts/env.sh`:
 
 - `PROJECT_ROOT`: radice del progetto
-- `APP_DB_PATH`: percorso del database SQLite (default `data/app.db`)
-- `APP_CONTEXT`: contesto web/Tomcat (default `prgweb`)
+- `PRGWEB_DB_PATH`: directory del database H2 (default `data/`)
+- `SERVER_PORT`: porta Spring Boot (default `8080`)
+- `SERVER_SERVLET_CONTEXT_PATH`: context path (default `/prgweb`)
+- `APP_CONTEXT`: base href Angular durante la build (default `prgweb`)
 
 Se cambi `APP_CONTEXT`, esegui di nuovo `./scripts/build.sh` perché la
-`base href` di Angular e il nome del WAR vengono rigenerati.
+`base href` degli asset Angular venga rigenerata. Mantieni il context path del
+server allineato tramite `SERVER_SERVLET_CONTEXT_PATH`.
 
-Tomcat usa la porta **8080** (configurabile in
-`~/.local/opt/apache-tomcat-11.0.27/conf/server.xml`).
+Il JAR include Tomcat embedded: non è necessario installare o avviare un
+Tomcat esterno.
 
 ## Riutilizzo dell'ambiente
 
-- **Tomcat è condiviso** in `~/.local/opt/apache-tomcat-11.0.27`: altri WAR
-  possono essere copiati in `webapps/` e serviti come contesti separati
-  (es. `altraapp.war` → `http://localhost:8080/altraapp/`).
-- **SQLite CLI e driver JDBC sono condivisi** in `~/.local/opt`.
-- Il **file del database è per-applicazione**: `data/app.db`. Per condividere
-  lo stesso DB con un'altra app, impostare `APP_DB_PATH` verso lo stesso file
-  (o creare un nuovo file per l'altra applicazione).
+- Il **file del database è per-applicazione**. Imposta `PRGWEB_DB_PATH` per
+  salvarlo in un'altra directory; usa una directory dedicata all'istanza.
 
 ## Log e troubleshooting
 
-- Log Tomcat: `~/.local/opt/apache-tomcat-11.0.27/logs/catalina.out`
-- Se l'app risponde 404 dopo il deploy, controlla che il WAR si chiami
-  `prgweb.war` e che il contesto sia `/prgweb`.
+- Log applicazione: `data/prgweb.log`
+- Se l'app non si avvia, controlla che `backend/target/prgweb.jar` esista;
+  in caso contrario esegui `./scripts/build.sh`.
 - Se il login non mantiene la sessione in sviluppo, verifica che il cookie
-  `JSESSIONID` abbia `Path=/` (`backend/src/main/webapp/WEB-INF/web.xml`).
+  `JSESSIONID` abbia `Path=/` nella configurazione Spring Boot.

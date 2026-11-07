@@ -21,11 +21,15 @@ frontend/.vscode/
 # Java / Maven
 # ====================================================================
 backend/target/
+scripts/lib/h2.jar
 
 # ====================================================================
-# Database SQLite
+# Database H2 (generated; never version)
 # ====================================================================
 data/
+*.mv.db
+*.lock.db
+*.trace.db
 *.db
 *.db-wal
 *.db-shm

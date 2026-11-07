@@ -1,0 +1,38 @@
+# Prgweb: backend Spring Boot (fat jar standalone con Tomcat embedded).
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: ${SERVER_SERVLET_CONTEXT_PATH:/prgweb}
+    session:
+      # Golden F0: 30 minuti di inattività, cookie Path=/, HttpOnly, SameSite=Lax,
+      # tracking a solo cookie (nessun URL rewriting).
+      timeout: 30m
+      tracking-modes: cookie
+      cookie:
+        name: JSESSIONID
+        path: /
+        http-only: true
+        same-site: lax
+
+spring:
+  application:
+    name: prgweb
+  datasource:
+    # H2 Embedded su file, singola istanza (AUTO_SERVER escluso).
+    # PRGWEB_DB_PATH è la directory che contiene i file database (default: ./data).
+    url: jdbc:h2:file:${PRGWEB_DB_PATH:./data}/app;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=FALSE
+    username: sa
+  jpa:
+    # Flyway unico proprietario dello schema: Hibernate solo validazione.
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true
+    open-in-view: false
+  flyway:
+    enabled: true
+
+logging:
+  level:
+    root: info

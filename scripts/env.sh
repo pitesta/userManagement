@@ -9,9 +9,6 @@ export PROJECT_ROOT
 export TOOLS_DIR
 export NODE_HOME="$TOOLS_DIR/node-v26.13.0-linux-x64"
 export MAVEN_HOME="$TOOLS_DIR/apache-maven-3.9.16"
-export CATALINA_HOME="$TOOLS_DIR/apache-tomcat-11.0.27"
-# I binari sqlite3 vengono estratti direttamente in TOOLS_DIR.
-export SQLITE_HOME="$TOOLS_DIR"
 
 if [ -n "$_jdk_dir" ]; then
   export JAVA_HOME="$_jdk_dir"
@@ -19,8 +16,9 @@ else
   export JAVA_HOME="$TOOLS_DIR/jdk"
 fi
 
-export PATH="$JAVA_HOME/bin:$NODE_HOME/bin:$MAVEN_HOME/bin:$SQLITE_HOME:$TOOLS_DIR/npm-global/bin:$PATH"
-export APP_DB_PATH="${APP_DB_PATH:-$PROJECT_ROOT/data/app.db}"
+export PATH="$JAVA_HOME/bin:$NODE_HOME/bin:$MAVEN_HOME/bin:$TOOLS_DIR/npm-global/bin:$PATH"
 
-# Deve puntare alla stessa directory usata da Tomcat (vedi bin/setenv.sh).
 export APP_CONTEXT="${APP_CONTEXT:-prgweb}"
+export PRGWEB_DB_PATH="${PRGWEB_DB_PATH:-$PROJECT_ROOT/data}"
+export SERVER_PORT="${SERVER_PORT:-8080}"
+export SERVER_SERVLET_CONTEXT_PATH="${SERVER_SERVLET_CONTEXT_PATH:-/$APP_CONTEXT}"

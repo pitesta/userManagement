@@ -19,6 +19,8 @@ export const LINGUE: OpzioneLingua[] = [
 export type ParametriTraduzione = Record<string, string | number>;
 
 const IT: Record<string, string> = {
+  'app.titolo': 'Gestione Utenti',
+  'app.sottotitolo': 'Angular + Java',
   'comune.lingua': 'Lingua',
   'comune.annulla': 'Annulla',
   'comune.elimina': 'Elimina',
@@ -55,7 +57,7 @@ const IT: Record<string, string> = {
   'login.titolo1': 'Gestione utenti',
   'login.titolo2': 'semplice e sicura.',
   'login.descrizione':
-    'Front-end Angular, back-end Java su Tomcat e database SQLite. Accedi con il tuo nome utente oppure registra un nuovo profilo.',
+    'Front-end Angular, back-end Java con Spring Boot e database H2. Accedi con il tuo nome utente oppure registra un nuovo profilo.',
   'login.punto1': 'Password protette con hashing BCrypt',
   'login.punto2': 'Sessione autenticata lato server',
   'login.punto3': 'Menu laterale e area riservata',
@@ -86,7 +88,7 @@ const IT: Record<string, string> = {
     "Benvenuto nell'area riservata. Da qui puoi consultare gli utenti registrati, crearne di nuovi e gestire la tua sessione.",
   'home.cardUtentiTitolo': 'Utenti registrati',
   'home.cardUtentiTesto':
-    "Consulta l'elenco completo degli account presenti nel database SQLite.",
+      "Consulta l'elenco completo degli account presenti nel database H2.",
   'home.cardUtentiLink': "Vai all'elenco →",
   'home.cardNuovoTitolo': 'Nuovo utente',
   'home.cardNuovoTesto':
@@ -142,6 +144,10 @@ const IT: Record<string, string> = {
   'impostazioni.backend': 'Back-end',
   'impostazioni.server': 'Server',
   'impostazioni.database': 'Database',
+  'impostazioni.frontendValore': 'Angular 22',
+  'impostazioni.backendValore': 'Java 25 · Spring Boot 4.1.2',
+  'impostazioni.serverValore': 'Tomcat 11 integrato',
+  'impostazioni.databaseValore': 'H2 Embedded su file',
   'impostazioni.sessione': 'Sessione',
   'impostazioni.utente': 'Utente',
   'impostazioni.autenticazione': 'Autenticazione',
@@ -169,10 +175,12 @@ const IT: Record<string, string> = {
   'errore.nomeGiaRegistrato': 'Nome utente già registrato.',
   'errore.generico': 'Si è verificato un errore. Riprova.',
   'errore.serverNonRaggiungibile':
-    'Server non raggiungibile. Verifica che Tomcat sia avviato.',
+    'Server non raggiungibile. Verifica che l’applicazione sia avviata.',
 };
 
 const EN: Record<string, string> = {
+  'app.titolo': 'User Management',
+  'app.sottotitolo': 'Angular + Java',
   'comune.lingua': 'Language',
   'comune.annulla': 'Cancel',
   'comune.elimina': 'Delete',
@@ -209,7 +217,7 @@ const EN: Record<string, string> = {
   'login.titolo1': 'User management',
   'login.titolo2': 'simple and secure.',
   'login.descrizione':
-    'Angular front-end, Java back-end on Tomcat and SQLite database. Sign in with your username or register a new profile.',
+    'Angular front-end, Java back-end with Spring Boot and H2 database. Sign in with your username or register a new profile.',
   'login.punto1': 'Passwords protected with BCrypt hashing',
   'login.punto2': 'Server-side authenticated session',
   'login.punto3': 'Sidebar menu and restricted area',
@@ -240,7 +248,7 @@ const EN: Record<string, string> = {
     'Welcome to the restricted area. Here you can browse registered users, create new ones and manage your session.',
   'home.cardUtentiTitolo': 'Registered users',
   'home.cardUtentiTesto':
-    'Browse the complete list of accounts in the SQLite database.',
+    'Browse the complete list of accounts in the H2 database.',
   'home.cardUtentiLink': 'Go to the list →',
   'home.cardNuovoTitolo': 'New user',
   'home.cardNuovoTesto':
@@ -296,6 +304,10 @@ const EN: Record<string, string> = {
   'impostazioni.backend': 'Back-end',
   'impostazioni.server': 'Server',
   'impostazioni.database': 'Database',
+  'impostazioni.frontendValore': 'Angular 22',
+  'impostazioni.backendValore': 'Java 25 · Spring Boot 4.1.2',
+  'impostazioni.serverValore': 'Embedded Tomcat 11',
+  'impostazioni.databaseValore': 'File-based H2 Embedded',
   'impostazioni.sessione': 'Session',
   'impostazioni.utente': 'User',
   'impostazioni.autenticazione': 'Authentication',
@@ -323,10 +335,12 @@ const EN: Record<string, string> = {
   'errore.nomeGiaRegistrato': 'Username already registered.',
   'errore.generico': 'An error occurred. Please try again.',
   'errore.serverNonRaggiungibile':
-    'Server unreachable. Check that Tomcat is running.',
+    'Server unreachable. Check that the application is running.',
 };
 
 const FR: Record<string, string> = {
+  'app.titolo': 'Gestion des utilisateurs',
+  'app.sottotitolo': 'Angular + Java',
   'comune.lingua': 'Langue',
   'comune.annulla': 'Annuler',
   'comune.elimina': 'Supprimer',
@@ -363,7 +377,7 @@ const FR: Record<string, string> = {
   'login.titolo1': 'Gestion des utilisateurs',
   'login.titolo2': 'simple et sécurisée.',
   'login.descrizione':
-    "Front-end Angular, back-end Java sur Tomcat et base de données SQLite. Connectez-vous avec votre nom d'utilisateur ou créez un nouveau profil.",
+    "Front-end Angular, back-end Java avec Spring Boot et base de données H2. Connectez-vous avec votre nom d'utilisateur ou créez un nouveau profil.",
   'login.punto1': 'Mots de passe protégés par hachage BCrypt',
   'login.punto2': 'Session authentifiée côté serveur',
   'login.punto3': 'Menu latéral et espace réservé',
@@ -396,7 +410,7 @@ const FR: Record<string, string> = {
     "Bienvenue dans l'espace réservé. Vous pouvez consulter les utilisateurs enregistrés, en créer de nouveaux et gérer votre session.",
   'home.cardUtentiTitolo': 'Utilisateurs enregistrés',
   'home.cardUtentiTesto':
-    'Consultez la liste complète des comptes présents dans la base SQLite.',
+    'Consultez la liste complète des comptes présents dans la base H2.',
   'home.cardUtentiLink': 'Aller à la liste →',
   'home.cardNuovoTitolo': 'Nouvel utilisateur',
   'home.cardNuovoTesto':
@@ -453,6 +467,10 @@ const FR: Record<string, string> = {
   'impostazioni.backend': 'Back-end',
   'impostazioni.server': 'Serveur',
   'impostazioni.database': 'Base de données',
+  'impostazioni.frontendValore': 'Angular 22',
+  'impostazioni.backendValore': 'Java 25 · Spring Boot 4.1.2',
+  'impostazioni.serverValore': 'Tomcat 11 intégré',
+  'impostazioni.databaseValore': 'H2 Embedded sur fichier',
   'impostazioni.sessione': 'Session',
   'impostazioni.utente': 'Utilisateur',
   'impostazioni.autenticazione': 'Authentification',
@@ -483,7 +501,7 @@ const FR: Record<string, string> = {
   'errore.nomeGiaRegistrato': "Nom d'utilisateur déjà enregistré.",
   'errore.generico': 'Une erreur est survenue. Réessayez.',
   'errore.serverNonRaggiungibile':
-    'Serveur inaccessible. Vérifiez que Tomcat est démarré.',
+    "Serveur inaccessible. Vérifiez que l'application est démarrée.",
 };
 
 const DIZIONARI: Record<Lingua, Record<string, string>> = { it: IT, en: EN, fr: FR };
@@ -525,7 +543,7 @@ export class I18nService {
   }
 
   t(chiave: string, parametri?: ParametriTraduzione): string {
-    const testo = this.dizionario()[chiave] ?? IT[chiave] ?? chiave;
+    const testo = this.dizionario()[chiave] ?? this.dizionario()['errore.generico'];
     if (!parametri) {
       return testo;
     }
@@ -542,10 +560,10 @@ export class I18nService {
     aggiornaDocumento(lingua);
   }
 
-  /** Traduce un messaggio italiano del back-end, lasciando intatto ciò che non conosce. */
+  /** Traduce i messaggi noti e nasconde i dettagli non localizzati del back-end. */
   traduciErrore(messaggio: string): string {
     const chiave = ERRORI_IT[messaggio];
-    return chiave ? this.t(chiave) : messaggio;
+    return chiave ? this.t(chiave) : this.t('errore.generico');
   }
 
   /** Messaggio localizzato a partire da un errore HTTP. */
